@@ -7,13 +7,23 @@ import AppointmentInfo from "./components/Appointmentinfo";
 function App() {
   let [appointmentList, setAppointmentList] = useState([]);
   let [query, setQuery] = useState("");
-  const filteredAppointments = appointmentList.filter((item) => {
-    return (
-      item.petName.toLowerCase().includes(query.toLowerCase()) ||
-      item.ownerName.toLowerCase().includes(query.toLowerCase()) ||
-      item.aptNotes.toLowerCase().includes(query.toLowerCase())
-    );
-  });
+  let [sortBy, setSortBy] = useState("petName");
+  let [orderBy, setOrderBy] = useState("asc");
+  const filteredAppointments = appointmentList
+    .filter((item) => {
+      return (
+        item.petName.toLowerCase().includes(query.toLowerCase()) ||
+        item.ownerName.toLowerCase().includes(query.toLowerCase()) ||
+        item.aptNotes.toLowerCase().includes(query.toLowerCase())
+      );
+    })
+    .sort((a, b) => {
+      let order = orderBy === "asc" ? 1 : -1;
+      return a[sortBy].toLowerCase() < b[sortBy].toLowerCase()
+        ? -1 * order
+        : 1 * order;
+    });
+
   const fetchData = useCallback(() => {
     fetch("./data.json")
       .then((Response) => Response.json())
@@ -31,7 +41,14 @@ function App() {
         <BiCalendar className="inline-block text-red-400 align-top" />
         Your Appointments
         <AddAppointment />
-        <Search query={query} onQueryChange={(myQuery) => setQuery(myQuery)} />
+        <Search
+          query={query}
+          onQueryChange={(myQuery) => setQuery(myQuery)}
+          orderBy={orderBy}
+          onOrderByChange={(mySort) => setOrderBy(mySort)}
+          sortBy={sortBy}
+          onSortByChange={(mySort) => setSortBy(mySort)}
+        />
         <ul className="divide-y divide-gray-200">
           {filteredAppointments.map((appointment) => (
             <AppointmentInfo
